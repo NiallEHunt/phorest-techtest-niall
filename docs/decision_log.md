@@ -17,3 +17,12 @@ Part 1 says we should return the "outcome of the play". I have chosen to return 
 In part 1, I have chosen to represent the colours and the outcomes as enums. In future parts we will need to expand on this to be able to generalise to an arbitrary list of colours. However, focusing on this part alone we do not need anything other than an enum yet.
 
 In testing, I have separated out the tests for the outcome of a set of slots vs the actual play call itself. This allows us to test the jackpot rule independently and deterministically. We can then test the play function with a fixed random as a sort of integration test.
+
+## 4. Part 2
+
+### Money
+While not explicitly called out in the assignment brief, I have chosen to represent all monetary values with a `Money` type. This will be composed of the amount and the currency. The amount will be a long and will be in the minor units of the currency. This will ensure we don't run into floating point rounding/precision errors. This is perhaps verging on overkill for this assignment, but I have been bitten in the past and know that internationalising money in critical systems can be quite difficult, so I think it's important to have this baked in from the beginning. 
+
+I considered using existing libraries for this Money type, but I didn't find one that seems to be considered an industry standard. From my experience, a lot of companies have their own handrolled versions like this, especially as how a company treats money is often quite specific to their business.
+
+For formatting, the locale specific formatting is a client concern. The REST endpoint will return the amount and the currency and the client will be responsible for handling locale specific formatting.
