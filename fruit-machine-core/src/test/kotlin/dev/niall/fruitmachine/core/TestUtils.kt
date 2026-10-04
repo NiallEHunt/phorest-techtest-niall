@@ -10,6 +10,9 @@ internal val BLACK = Colour("black")
 internal val GREEN = Colour("green")
 internal val WHITE = Colour("white")
 internal val YELLOW = Colour("yellow")
+internal val RED = Colour("red")
+internal val BLUE = Colour("blue")
+internal val PURPLE = Colour("purple")
 
 internal val DEFAULT_CONFIG = FruitMachineConfig(
     slotCount = 4,
