@@ -7,10 +7,7 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 
-private val EUR = Currency.getInstance("EUR")
 private val USD = Currency.getInstance("USD")
-
-private fun euro(minorUnits: Long) = Money(minorUnits, EUR)
 
 class MoneyTest {
     @Test
