@@ -12,6 +12,7 @@ class FruitMachineConfigTest {
             FruitMachineConfig(
                 slotCount = 2,
                 colours = listOf(BLACK, WHITE, GREEN, YELLOW),
+                adjacentSlotsForSmallPrize = 2,
                 playCost = PLAY_COST
             )
         }
@@ -23,6 +24,7 @@ class FruitMachineConfigTest {
             FruitMachineConfig(
                 slotCount = 3,
                 colours = listOf(BLACK, WHITE, GREEN, YELLOW),
+                adjacentSlotsForSmallPrize = 2,
                 playCost = PLAY_COST
             )
         }
@@ -34,6 +36,7 @@ class FruitMachineConfigTest {
             FruitMachineConfig(
                 slotCount = 4,
                 colours = listOf(BLACK),
+                adjacentSlotsForSmallPrize = 2,
                 playCost = PLAY_COST
             )
         }
@@ -45,6 +48,7 @@ class FruitMachineConfigTest {
             FruitMachineConfig(
                 slotCount = 4,
                 colours = listOf(BLACK, WHITE),
+                adjacentSlotsForSmallPrize = 2,
                 playCost = PLAY_COST
             )
         }
@@ -56,6 +60,43 @@ class FruitMachineConfigTest {
             FruitMachineConfig(
                 slotCount = 4,
                 colours = listOf(BLACK, WHITE, BLACK),
+                adjacentSlotsForSmallPrize = 2,
+                playCost = PLAY_COST
+            )
+        }
+    }
+
+    @Test
+    fun `rejects 1 adjacent slot for a small prize`() {
+        assertFailsWith<IllegalArgumentException> {
+            FruitMachineConfig(
+                slotCount = 4,
+                colours = listOf(BLACK, WHITE, GREEN, YELLOW),
+                adjacentSlotsForSmallPrize = 1,
+                playCost = PLAY_COST
+            )
+        }
+    }
+
+    @Test
+    fun `rejects more adjacent slots for a small prize than the slot count`() {
+        assertFailsWith<IllegalArgumentException> {
+            FruitMachineConfig(
+                slotCount = 4,
+                colours = listOf(BLACK, WHITE, GREEN, YELLOW),
+                adjacentSlotsForSmallPrize = 5,
+                playCost = PLAY_COST
+            )
+        }
+    }
+
+    @Test
+    fun `accepts adjacent slots for a small prize equal to the slot count`() {
+        assertDoesNotThrow {
+            FruitMachineConfig(
+                slotCount = 4,
+                colours = listOf(BLACK, WHITE, GREEN, YELLOW),
+                adjacentSlotsForSmallPrize = 4,
                 playCost = PLAY_COST
             )
         }
@@ -67,6 +108,7 @@ class FruitMachineConfigTest {
             FruitMachineConfig(
                 slotCount = 4,
                 colours = listOf(BLACK, WHITE, GREEN, YELLOW),
+                adjacentSlotsForSmallPrize = 2,
                 playCost = euro(0)
             )
         }

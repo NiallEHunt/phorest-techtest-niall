@@ -10,7 +10,7 @@ class FruitMachineEngine(private val random: Random) {
     
     fun play(machine: FruitMachine): PlayResult {
         val slots = spin(machine.config)
-        val outcome = computeOutcomeOf(slots)
+        val outcome = computeOutcomeOf(slots, machine.config.adjacentSlotsForSmallPrize)
 
         // The play cost goes into the float before any prize is paid out.
         val available = machine.float + machine.config.playCost

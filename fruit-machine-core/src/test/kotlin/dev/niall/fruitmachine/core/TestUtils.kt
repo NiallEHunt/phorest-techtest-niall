@@ -17,5 +17,6 @@ internal val PURPLE = Colour("purple")
 internal val DEFAULT_CONFIG = FruitMachineConfig(
     slotCount = 4,
     colours = listOf(BLACK, GREEN, WHITE, YELLOW),
+    adjacentSlotsForSmallPrize = 2,
     playCost = PLAY_COST
 )

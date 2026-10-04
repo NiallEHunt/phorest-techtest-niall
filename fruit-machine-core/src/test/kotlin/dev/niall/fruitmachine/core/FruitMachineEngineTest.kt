@@ -12,6 +12,7 @@ class FruitMachineEngineTest {
         val config = FruitMachineConfig(
             slotCount = 10,
             colours = listOf(BLACK, WHITE),
+            adjacentSlotsForSmallPrize = 2,
             playCost = PLAY_COST
         )
 
