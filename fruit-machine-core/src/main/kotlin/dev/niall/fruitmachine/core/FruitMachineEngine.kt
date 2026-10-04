@@ -6,7 +6,7 @@ enum class Colour { BLACK, WHITE, GREEN, YELLOW }
 
 data class PlayResult(val slots: List<Colour>, val outcome: Outcome, val payout: Payout, val float: Money)
 
-class FruitMachine(private val random: Random) {
+class FruitMachineEngine(private val random: Random) {
     companion object {
         const val SLOT_COUNT = 4
     }

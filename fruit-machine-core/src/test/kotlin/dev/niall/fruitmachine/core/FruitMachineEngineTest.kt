@@ -6,10 +6,10 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
-class FruitMachineTest {
+class FruitMachineEngineTest {
     @Test
     fun `a play spins four slots`() {
-        val result = FruitMachine(Random(10)).play(euro(1000), PLAY_COST)
+        val result = FruitMachineEngine(Random(10)).play(euro(1000), PLAY_COST)
 
         assertEquals(4, result.slots.size)
     }
@@ -21,7 +21,7 @@ class FruitMachineTest {
             override fun nextBits(bitCount: Int): Int = 0
         }
 
-        val result = FruitMachine(fixedRandom).play(euro(1000), PLAY_COST)
+        val result = FruitMachineEngine(fixedRandom).play(euro(1000), PLAY_COST)
 
         assertEquals(
             PlayResult(
@@ -37,7 +37,7 @@ class FruitMachineTest {
     @Test
     fun `rejects a negative float`() {
         assertFailsWith<IllegalArgumentException> {
-            FruitMachine(Random(10)).play(euro(-1), PLAY_COST)
+            FruitMachineEngine(Random(10)).play(euro(-1), PLAY_COST)
         }
     }
 }
