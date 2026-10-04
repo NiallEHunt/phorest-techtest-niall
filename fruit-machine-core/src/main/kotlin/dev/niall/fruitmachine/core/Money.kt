@@ -25,6 +25,13 @@ data class Money(
         return Money(minorUnits.floorDiv(divisor), currency)
     }
 
+    // How many whole multiples of `other` fit into this amount, rounding down.
+    operator fun div(other: Money): Long {
+        requireSameCurrency(other)
+        require(other.minorUnits != 0L) { "Cannot divide by zero" }
+        return minorUnits.floorDiv(other.minorUnits)
+    }
+
     override fun compareTo(other: Money): Int {
         requireSameCurrency(other)
         return minorUnits.compareTo(other.minorUnits)

@@ -44,6 +44,26 @@ class MoneyTest {
     }
 
     @Test
+    fun `dividing by an amount counts how many times it fits`() {
+        assertEquals(3, euro(300) / euro(100))
+    }
+
+    @Test
+    fun `dividing by an amount rounds down`() {
+        assertEquals(1, euro(150) / euro(100))
+    }
+
+    @Test
+    fun `rejects dividing by a zero amount`() {
+        assertFailsWith<IllegalArgumentException> { euro(100) / euro(0) }
+    }
+
+    @Test
+    fun `rejects dividing by a different currency`() {
+        assertFailsWith<IllegalArgumentException> { euro(100) / Money(100, USD) }
+    }
+
+    @Test
     fun `compares amounts`() {
         assertTrue(euro(200) > euro(150))
         assertTrue(euro(150) < euro(200))
