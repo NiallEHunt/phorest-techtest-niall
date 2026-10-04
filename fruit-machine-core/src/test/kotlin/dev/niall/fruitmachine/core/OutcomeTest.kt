@@ -1,9 +1,5 @@
 package dev.niall.fruitmachine.core
 
-import dev.niall.fruitmachine.core.Colour.BLACK
-import dev.niall.fruitmachine.core.Colour.GREEN
-import dev.niall.fruitmachine.core.Colour.WHITE
-import dev.niall.fruitmachine.core.Colour.YELLOW
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
