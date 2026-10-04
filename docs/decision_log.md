@@ -26,3 +26,11 @@ While not explicitly called out in the assignment brief, I have chosen to repres
 I considered using existing libraries for this Money type, but I didn't find one that seems to be considered an industry standard. From my experience, a lot of companies have their own handrolled versions like this, especially as how a company treats money is often quite specific to their business.
 
 For formatting, the locale specific formatting is a client concern. The REST endpoint will return the amount and the currency and the client will be responsible for handling locale specific formatting.
+
+### Game logic
+It's not explicitly mentioned in the brief but I am assuming the price of the single play goes into the machine's prize pot before the prizes are won.
+
+In a similar vein, I am assuming only one rule will apply for any given spin. The rules will take effect in order (e.g. every jackpot will also qualify for the small prize, however, the jackpot will always take precedence over the small prize).
+
+With these assumptions, a small prize could be worth more to the player than a jackpot if the pot is low. The jackpot and full house prizes are tied to the amount in the pot while the small prize is always 5 times the cost to play. This also means that only the small prize can ever be worth more than is in the pot and therefore the only rule that can win the player free spins. The brief says that the free plays rule "does not apply to a jackpot", which in my interpretation is true becuase it is not possible to ever win more than the pot. This is how I will implement this task but I would want to confirm all of these assumptions with the product team to ensure this is the intended behaviour.
+

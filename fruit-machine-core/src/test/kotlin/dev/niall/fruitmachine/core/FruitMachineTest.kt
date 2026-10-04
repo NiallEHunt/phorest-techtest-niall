@@ -15,13 +15,25 @@ class OutcomeTest {
     }
 
     @Test
-    fun `one different colour slot is not a jackpot`() {
-        assertEquals(Outcome.NO_PRIZE, computeOutcomeOf(listOf(GREEN, WHITE, WHITE, WHITE)))
+    fun `all different colours is a full house`() {
+        assertEquals(Outcome.FULL_HOUSE, computeOutcomeOf(listOf(GREEN, WHITE, BLACK, YELLOW)))
     }
 
     @Test
-    fun `all different colour slots is not a jackpot`() {
-        assertEquals(Outcome.NO_PRIZE, computeOutcomeOf(listOf(GREEN, WHITE, BLACK, YELLOW)))
+    fun `a matching pair is a small prize`() {
+        assertEquals(Outcome.SMALL_PRIZE, computeOutcomeOf(listOf(GREEN, GREEN, WHITE, BLACK)))
+        assertEquals(Outcome.SMALL_PRIZE, computeOutcomeOf(listOf(WHITE, GREEN, GREEN, BLACK)))
+        assertEquals(Outcome.SMALL_PRIZE, computeOutcomeOf(listOf(WHITE, BLACK, GREEN, GREEN)))
+    }
+
+    @Test
+    fun `greater than 2 matching colours is still a small prize`() {
+        assertEquals(Outcome.SMALL_PRIZE, computeOutcomeOf(listOf(GREEN, WHITE, WHITE, WHITE)))
+    }
+
+    @Test
+    fun `repeated colours that are not adjacent win no prize`() {
+        assertEquals(Outcome.NO_PRIZE, computeOutcomeOf(listOf(BLACK, WHITE, BLACK, WHITE)))
     }
 }
 
