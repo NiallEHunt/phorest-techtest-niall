@@ -3,7 +3,7 @@ package dev.niall.fruitmachine.investigations
 import dev.niall.fruitmachine.core.Outcome
 
 // Int-based alternatives to the core's String-backed Colour, written only so they can be
-// benchmarked against it. Each mirrors the logic in fruit-machine-core's Outcome.kt.
+// benchmarked against it. Each mirrors the core's original logic (see OriginalCore.kt).
 
 // A colour is an index into the config's colour list, held in a List<Int>.
 // Uses exactly the same algorithm as the core.

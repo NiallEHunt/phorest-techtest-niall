@@ -8,7 +8,7 @@
 
 ### The question
 
-In the core, a colour is a `String` value class (`Colour(val name: String)`), and a spin is a `List<Colour>`. The obvious alternative is to represent each colour by its index in the config's colour list, as an `Int`. That's usually assumed to be faster. This benchmark measures how much faster, so the decision is based on numbers.
+When this investigation started, a colour in the core was a `String` value class (`@JvmInline value class Colour(val name: String)`), and a spin was a `List<Colour>`. The obvious alternative is to represent each colour by its index in the config's colour list, as an `Int`. That's usually assumed to be faster. This benchmark measures how much faster, so the decision is based on numbers.
 
 ### What is compared
 
@@ -18,7 +18,7 @@ Representations:
 
 | Representation | Spin type | Notes |
 |---|---|---|
-| **Colour list** (what the core uses) | `List<Colour>` | A value class is boxed when stored in a `List`, so each slot gets its own small wrapper object |
+| **Colour list** (what the core used at the time) | `List<Colour>` | A value class is boxed when stored in a `List`, so each slot gets its own small wrapper object |
 | **Plain colour list** (round 2) | `List<PlainColour>` | A plain `data class PlainColour(val name: String)`. Each slot points at a shared instance from the config's colour list, so a spin creates no object per slot |
 | **Int list** | `List<Int>` | A colour is its index in the config's colour list |
 | **Int array** | `IntArray` | The same index, stored as a primitive |
@@ -28,7 +28,7 @@ Evaluation algorithms:
 
 | Algorithm | Used with | How it works |
 |---|---|---|
-| **Core** | Colour list, Int list, Int array | The core's `computeOutcomeOf` (or an `Int` copy of it): `distinct()` twice over the whole row, then the run check |
+| **Core** | Colour list, Int list, Int array | The core's original `computeOutcomeOf` (or an `Int` copy of it): `distinct()` twice over the whole row, then the run check |
 | **Primitive** | Int array | Counts distinct colours in a `BooleanArray` over the whole row, so nothing is boxed or hashed |
 | **Single pass** (round 2) | Colour list, plain colour list, Spin | Checks all three rules in one pass and stops once the outcome is certain. The list versions use a `HashSet`, which they stop filling at the first repeated colour; the Spin version uses a `BooleanArray` sized to the colour list |
 
@@ -251,3 +251,7 @@ Two changes are worth considering in the core:
 
 1. **Evaluate in a single pass that stops early.** This is the change that matters, in line with the brief's request for a solution that stays efficient as the number of slots grows. It's faster at every size measured except one: with 100,000 colours and 100 slots, a whole play was within the noise.
 2. **Possibly make `Colour` a plain class instead of a value class.** It allocates less in every spin, at no measurable cost. This is a smaller, optional gain: with the single-pass algorithm in place, the value class costs about 50–80 bytes per 4-slot play.
+
+### What changed as a result
+
+Both changes have since been made in the core: `Colour` is now a `data class`, and `computeOutcomeOf` uses the single-pass algorithm. So that re-running the benchmarks still measures what this document describes, they use frozen copies of the original value class (`ValueColour`) and algorithm (`computeOutcomeOfOriginal`) in `OriginalCore.kt`, rather than the core's current code.

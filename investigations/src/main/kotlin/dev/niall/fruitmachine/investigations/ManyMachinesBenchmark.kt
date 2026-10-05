@@ -1,7 +1,5 @@
 package dev.niall.fruitmachine.investigations
 
-import dev.niall.fruitmachine.core.Colour
-import dev.niall.fruitmachine.core.computeOutcomeOf
 import kotlinx.benchmark.Benchmark
 import kotlinx.benchmark.Param
 import kotlinx.benchmark.Scope
@@ -37,7 +35,7 @@ open class ManyMachinesBenchmark {
 
     class Machine(
         val colourNames: List<String>,
-        val colours: List<Colour>,
+        val colours: List<ValueColour>,
         val plainColours: List<PlainColour>
     )
 
@@ -48,7 +46,7 @@ open class ManyMachinesBenchmark {
         machines = Array(machineCount) {
             // A string template builds a new String each time, so no two machines share names.
             val names = List(colourCount) { colour -> "colour-$colour" }
-            Machine(names, names.map { Colour(it) }, names.map { PlainColour(it) })
+            Machine(names, names.map { ValueColour(it) }, names.map { PlainColour(it) })
         }
     }
 
@@ -66,7 +64,7 @@ open class ManyMachinesBenchmark {
     open fun playColourList(player: Player): PlayResponse {
         val machine = machines[player.random.nextInt(machineCount)]
         val slots = List(slotCount) { machine.colours.random(player.random) }
-        val outcome = computeOutcomeOf(slots, adjacentSlotsForSmallPrize)
+        val outcome = computeOutcomeOfOriginal(slots, adjacentSlotsForSmallPrize)
         return PlayResponse(slots.map { it.name }, outcome)
     }
 

@@ -1,8 +1,6 @@
 package dev.niall.fruitmachine.investigations
 
-import dev.niall.fruitmachine.core.Colour
 import dev.niall.fruitmachine.core.Outcome
-import dev.niall.fruitmachine.core.computeOutcomeOf
 import kotlinx.benchmark.Benchmark
 import kotlinx.benchmark.Param
 import kotlinx.benchmark.Scope
@@ -10,8 +8,9 @@ import kotlinx.benchmark.Setup
 import kotlinx.benchmark.State
 import kotlin.random.Random
 
-// Compares the core's String-backed Colour value class against alternative representations,
-// for spinning, evaluating and a whole play. See README.md for how to run it and for the results.
+// Compares the core's original String-backed Colour value class (ValueColour, see OriginalCore.kt)
+// against alternative representations, for spinning, evaluating and a whole play. See README.md
+// for how to run it and for the results.
 //
 // The class and its methods are `open` because JMH generates subclasses of benchmark
 // classes, and Kotlin classes are final by default.
@@ -28,13 +27,13 @@ open class ColourRepresentationBenchmark {
 
     private val adjacentSlotsForSmallPrize = 2
 
-    private lateinit var colours: List<Colour>
+    private lateinit var colours: List<ValueColour>
     private lateinit var plainColours: List<PlainColour>
     private lateinit var colourNames: List<String>
     private lateinit var random: Random
 
     // The same spin in each representation, for the evaluate benchmarks.
-    private lateinit var colourSlots: List<Colour>
+    private lateinit var colourSlots: List<ValueColour>
     private lateinit var plainColourSlots: List<PlainColour>
     private lateinit var intListSlots: List<Int>
     private lateinit var intArraySlots: IntArray
@@ -43,7 +42,7 @@ open class ColourRepresentationBenchmark {
     @Setup
     open fun setUp() {
         colourNames = List(colourCount) { "colour-$it" }
-        colours = colourNames.map { Colour(it) }
+        colours = colourNames.map { ValueColour(it) }
         plainColours = colourNames.map { PlainColour(it) }
         random = Random(42)
 
@@ -60,7 +59,7 @@ open class ColourRepresentationBenchmark {
     // Spinning: the same as FruitMachineEngine.spin, in each representation.
 
     @Benchmark
-    open fun spinColourList(): List<Colour> = List(slotCount) { colours.random(random) }
+    open fun spinColourList(): List<ValueColour> = List(slotCount) { colours.random(random) }
 
     @Benchmark
     open fun spinPlainColourList(): List<PlainColour> = List(slotCount) { plainColours.random(random) }
@@ -71,10 +70,10 @@ open class ColourRepresentationBenchmark {
     @Benchmark
     open fun spinIntArray(): IntArray = IntArray(slotCount) { random.nextInt(colourCount) }
 
-    // Evaluating with the core's algorithm: the core's real computeOutcomeOf, against Int copies of it.
+    // Evaluating with the core's original algorithm (see OriginalCore.kt), against Int copies of it.
 
     @Benchmark
-    open fun evaluateColourList(): Outcome = computeOutcomeOf(colourSlots, adjacentSlotsForSmallPrize)
+    open fun evaluateColourList(): Outcome = computeOutcomeOfOriginal(colourSlots, adjacentSlotsForSmallPrize)
 
     @Benchmark
     open fun evaluateIntList(): Outcome = computeOutcomeOfIntList(intListSlots, adjacentSlotsForSmallPrize)
@@ -107,7 +106,7 @@ open class ColourRepresentationBenchmark {
     @Benchmark
     open fun playColourList(): PlayResponse {
         val slots = List(slotCount) { colours.random(random) }
-        val outcome = computeOutcomeOf(slots, adjacentSlotsForSmallPrize)
+        val outcome = computeOutcomeOfOriginal(slots, adjacentSlotsForSmallPrize)
         return PlayResponse(slots.map { it.name }, outcome)
     }
 
@@ -148,12 +147,12 @@ open class ColourRepresentationBenchmark {
 
     private fun checkAgree(names: List<String>, colourCount: Int) {
         val indices = names.map { it.removePrefix("colour-").toInt() }.toIntArray()
-        val expected = computeOutcomeOf(names.map { Colour(it) }, adjacentSlotsForSmallPrize)
+        val expected = computeOutcomeOfOriginal(names.map { ValueColour(it) }, adjacentSlotsForSmallPrize)
         val actual = listOf(
             computeOutcomeOfIntList(indices.toList(), adjacentSlotsForSmallPrize),
             computeOutcomeOfIntArray(indices, adjacentSlotsForSmallPrize),
             computeOutcomeOfIntArrayPrimitive(indices, colourCount, adjacentSlotsForSmallPrize),
-            computeOutcomeOfSinglePass(names.map { Colour(it) }, adjacentSlotsForSmallPrize),
+            computeOutcomeOfSinglePass(names.map { ValueColour(it) }, adjacentSlotsForSmallPrize),
             computeOutcomeOfSinglePass(names.map { PlainColour(it) }, adjacentSlotsForSmallPrize),
             computeOutcomeOfSinglePass(Spin(indices), colourCount, adjacentSlotsForSmallPrize),
         )
