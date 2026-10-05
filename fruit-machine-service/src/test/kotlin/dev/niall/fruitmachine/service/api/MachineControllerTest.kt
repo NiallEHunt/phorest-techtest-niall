@@ -4,7 +4,10 @@ import dev.niall.fruitmachine.core.FruitMachineEngine
 import dev.niall.fruitmachine.service.MachineService
 import dev.niall.fruitmachine.service.sequenceRandom
 import dev.niall.fruitmachine.service.persistence.InMemoryMachineRepository
+import org.hamcrest.Matcher
 import org.hamcrest.Matchers.contains
+import org.hamcrest.Matchers.containsString
+import org.hamcrest.Matchers.equalTo
 import org.hamcrest.Matchers.matchesPattern
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.TestConfiguration
@@ -38,10 +41,18 @@ class MachineControllerTest(@Autowired private val mockMvc: MockMvc) {
         }
     """.trimIndent()
 
-    private fun createMachine() = mockMvc.post("/machines") {
+    private fun createMachine(request: String = createRequest) = mockMvc.post("/machines") {
         contentType = MediaType.APPLICATION_JSON
-        content = createRequest
+        content = request
     }
+
+    private fun createMachineExpectingBadRequest(request: String, expectedDetail: Matcher<String>) =
+        createMachine(request).andExpect {
+            status { isBadRequest() }
+            content { contentType(MediaType.APPLICATION_PROBLEM_JSON) }
+            jsonPath("$.status") { value(400) }
+            jsonPath("$.detail") { value(expectedDetail) }
+        }
 
     @Test
     fun `creating a machine returns 201 with its location and configuration`() {
@@ -85,9 +96,50 @@ class MachineControllerTest(@Autowired private val mockMvc: MockMvc) {
     }
 
     @Test
-    fun `reading a machine with a malformed id returns 400`() {
+    fun `reading a machine with a malformed id returns 400 problem details`() {
         mockMvc.get("/machines/not-a-uuid").andExpect {
             status { isBadRequest() }
+            content { contentType(MediaType.APPLICATION_PROBLEM_JSON) }
+        }
+    }
+
+    @Test
+    fun `creating a machine the core rejects returns 400 with the reason`() {
+        createMachineExpectingBadRequest(
+            createRequest.replace("\"slotCount\": 4", "\"slotCount\": 1"),
+            equalTo("A slot count of 2 or less will result in a machine where every spin wins a prize")
+        )
+    }
+
+    @Test
+    fun `creating a machine with an unknown currency returns 400`() {
+        createMachineExpectingBadRequest(
+            createRequest.replace("\"EUR\"", "\"XYZ\""),
+            containsString("XYZ")
+        )
+    }
+
+    @Test
+    fun `creating a machine with different currencies for its float and play cost returns 400`() {
+        createMachineExpectingBadRequest(
+            createRequest.replace("{ \"minorUnits\": 5000, \"currency\": \"EUR\" }", "{ \"minorUnits\": 5000, \"currency\": \"USD\" }"),
+            equalTo("A machine must use the same currency for its float and for its play cost")
+        )
+    }
+
+    @Test
+    fun `creating a machine with malformed JSON returns 400 problem details`() {
+        createMachine("{ not json").andExpect {
+            status { isBadRequest() }
+            content { contentType(MediaType.APPLICATION_PROBLEM_JSON) }
+        }
+    }
+
+    @Test
+    fun `creating a machine with a missing field returns 400 problem details`() {
+        createMachine(createRequest.replace("\"slotCount\": 4,", "")).andExpect {
+            status { isBadRequest() }
+            content { contentType(MediaType.APPLICATION_PROBLEM_JSON) }
         }
     }
 

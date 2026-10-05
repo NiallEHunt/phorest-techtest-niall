@@ -20,6 +20,8 @@ data class MoneyDto(
     }
 }
 
+class InvalidMachineConfigException(message: String?, cause: Throwable) : RuntimeException(message, cause)
+
 data class CreateMachineRequest(
     val slotCount: Int,
     val colours: List<String>,
@@ -27,14 +29,16 @@ data class CreateMachineRequest(
     val playCost: MoneyDto,
     val startingFloat: MoneyDto
 ) {
-    fun toFruitMachine(): FruitMachine {
+    fun toFruitMachine(): FruitMachine = try {
         val config = FruitMachineConfig(
             slotCount = slotCount,
             colours = colours.map(::Colour),
             adjacentSlotsForSmallPrize = adjacentSlotsForSmallPrize,
             playCost = playCost.toMoney()
         )
-        return FruitMachine(config, startingFloat.toMoney())
+        FruitMachine(config, startingFloat.toMoney())
+    } catch (e: IllegalArgumentException) {
+        throw InvalidMachineConfigException(e.message, e)
     }
 }
 

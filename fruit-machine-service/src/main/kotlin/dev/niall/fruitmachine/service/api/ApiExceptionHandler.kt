@@ -11,4 +11,8 @@ class ApiExceptionHandler {
     @ExceptionHandler
     fun handleMachineNotFound(exception: MachineNotFoundException): ProblemDetail =
         ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, exception.message)
+
+    @ExceptionHandler
+    fun handleInvalidMachineConfig(exception: InvalidMachineConfigException): ProblemDetail =
+        ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, exception.message)
 }
