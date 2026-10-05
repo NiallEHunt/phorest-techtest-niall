@@ -2,22 +2,35 @@ package dev.niall.fruitmachine.core
 
 enum class Outcome { JACKPOT, FULL_HOUSE, SMALL_PRIZE, NO_PRIZE }
 
-private fun allSame(slots: List<Colour>): Boolean = slots.distinct().size == 1
-private fun allDifferent(slots: List<Colour>): Boolean = slots.distinct().size == slots.size
-
-private fun hasAdjacentMatches(slots: List<Colour>, count: Int): Boolean {
+fun computeOutcomeOf(slots: List<Colour>, adjacentSlotsForSmallPrize: Int): Outcome {
+    val seen = HashSet<Colour>()
+    var allSame = true
+    var allDifferent = true
     var run = 1
-    for (i in 1 until slots.size) {
-        run = if (slots[i] == slots[i - 1]) run + 1 else 1
-        if (run >= count) return true
-    }
-    return false
-}
+    var hasAdjacentMatches = false
 
-fun computeOutcomeOf(slots: List<Colour>, adjacentSlotsForSmallPrize: Int): Outcome =
-    when {
-        allSame(slots) -> Outcome.JACKPOT
-        allDifferent(slots) -> Outcome.FULL_HOUSE
-        hasAdjacentMatches(slots, adjacentSlotsForSmallPrize) -> Outcome.SMALL_PRIZE
+    for (i in slots.indices) {
+        if (i > 0) {
+            if (slots[i] == slots[i - 1]) {
+                run++
+            } else {
+                allSame = false
+                run = 1
+            }
+            if (run >= adjacentSlotsForSmallPrize) hasAdjacentMatches = true
+        }
+
+        // Once a colour repeats, the slots can't be a full house, so there's no need to track colours.
+        if (allDifferent && !seen.add(slots[i])) allDifferent = false
+
+        // Neither a jackpot nor a full house is possible any more, and the threshold for the small prize has already been met.
+        if (!allSame && !allDifferent && hasAdjacentMatches) return Outcome.SMALL_PRIZE
+    }
+
+    return when {
+        allSame -> Outcome.JACKPOT
+        allDifferent -> Outcome.FULL_HOUSE
+        hasAdjacentMatches -> Outcome.SMALL_PRIZE
         else -> Outcome.NO_PRIZE
     }
+}
