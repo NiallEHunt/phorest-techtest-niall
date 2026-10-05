@@ -15,4 +15,9 @@ class InMemoryMachineRepository : MachineRepository {
     }
 
     override fun findById(id: UUID): FruitMachine? = machines[id]
+
+    // computeIfPresent locks the entry for this id while `transform` runs, so updates
+    // to the same machine happen one at a time while other machines are unaffected.
+    override fun update(id: UUID, transform: (FruitMachine) -> FruitMachine): FruitMachine? =
+        machines.computeIfPresent(id) { _, machine -> transform(machine) }
 }
