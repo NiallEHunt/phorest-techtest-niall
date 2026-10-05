@@ -1,0 +1,14 @@
+package dev.niall.fruitmachine.service.api
+
+import dev.niall.fruitmachine.service.MachineNotFoundException
+import org.springframework.http.HttpStatus
+import org.springframework.http.ProblemDetail
+import org.springframework.web.bind.annotation.ExceptionHandler
+import org.springframework.web.bind.annotation.RestControllerAdvice
+
+@RestControllerAdvice
+class ApiExceptionHandler {
+    @ExceptionHandler
+    fun handleMachineNotFound(exception: MachineNotFoundException): ProblemDetail =
+        ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, exception.message)
+}

@@ -18,6 +18,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect")
 
     testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
+    testImplementation(kotlin("test"))
 }
 
 java {
