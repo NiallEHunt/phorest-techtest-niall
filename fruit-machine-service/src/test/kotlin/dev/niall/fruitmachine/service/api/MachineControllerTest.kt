@@ -1,11 +1,15 @@
 package dev.niall.fruitmachine.service.api
 
+import dev.niall.fruitmachine.core.FruitMachineEngine
 import dev.niall.fruitmachine.service.MachineService
+import dev.niall.fruitmachine.service.sequenceRandom
 import dev.niall.fruitmachine.service.persistence.InMemoryMachineRepository
 import org.hamcrest.Matchers.contains
 import org.hamcrest.Matchers.matchesPattern
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest
+import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Import
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
@@ -15,8 +19,15 @@ import kotlin.test.Test
 import kotlin.test.assertNotNull
 
 @WebMvcTest(MachineController::class)
-@Import(MachineService::class, InMemoryMachineRepository::class)
+@Import(MachineService::class, InMemoryMachineRepository::class, MachineControllerTest.JackpotEngine::class)
 class MachineControllerTest(@Autowired private val mockMvc: MockMvc) {
+    // Every spin lands on the first colour, so every play is a jackpot.
+    @TestConfiguration
+    class JackpotEngine {
+        @Bean
+        fun fruitMachineEngine() = FruitMachineEngine(sequenceRandom(0))
+    }
+
     private val createRequest = """
         {
           "slotCount": 4,
@@ -77,6 +88,40 @@ class MachineControllerTest(@Autowired private val mockMvc: MockMvc) {
     fun `reading a machine with a malformed id returns 400`() {
         mockMvc.get("/machines/not-a-uuid").andExpect {
             status { isBadRequest() }
+        }
+    }
+
+    @Test
+    fun `playing a machine returns the outcome and the new float`() {
+        val location = assertNotNull(createMachine().andReturn().response.getHeader("Location"))
+
+        mockMvc.post("$location/play").andExpect {
+            status { isOk() }
+            jsonPath("$.slots") { value(contains("black", "black", "black", "black")) }
+            jsonPath("$.outcome") { value("JACKPOT") }
+            jsonPath("$.payout.minorUnits") { value(5100) }
+            jsonPath("$.payout.currency") { value("EUR") }
+            jsonPath("$.freePlaysCredited") { value(0) }
+            jsonPath("$.float.minorUnits") { value(0) }
+            jsonPath("$.float.currency") { value("EUR") }
+        }
+    }
+
+    @Test
+    fun `a play's new float is stored`() {
+        val location = assertNotNull(createMachine().andReturn().response.getHeader("Location"))
+
+        mockMvc.post("$location/play")
+
+        mockMvc.get(location).andExpect {
+            jsonPath("$.float.minorUnits") { value(0) }
+        }
+    }
+
+    @Test
+    fun `playing an unknown machine returns 404`() {
+        mockMvc.post("/machines/00000000-0000-0000-0000-000000000000/play").andExpect {
+            status { isNotFound() }
         }
     }
 }

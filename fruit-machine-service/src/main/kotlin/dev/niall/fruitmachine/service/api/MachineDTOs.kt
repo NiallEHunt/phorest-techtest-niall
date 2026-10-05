@@ -4,6 +4,8 @@ import dev.niall.fruitmachine.core.Colour
 import dev.niall.fruitmachine.core.FruitMachine
 import dev.niall.fruitmachine.core.FruitMachineConfig
 import dev.niall.fruitmachine.core.Money
+import dev.niall.fruitmachine.core.Outcome
+import dev.niall.fruitmachine.core.PlayResult
 import java.util.Currency
 import java.util.UUID
 
@@ -52,6 +54,24 @@ data class MachineResponse(
             adjacentSlotsForSmallPrize = machine.config.adjacentSlotsForSmallPrize,
             playCost = MoneyDto.from(machine.config.playCost),
             float = MoneyDto.from(machine.float)
+        )
+    }
+}
+
+data class PlayResponse(
+    val slots: List<String>,
+    val outcome: Outcome,
+    val payout: MoneyDto,
+    val freePlaysCredited: Long,
+    val float: MoneyDto
+) {
+    companion object {
+        fun from(result: PlayResult) = PlayResponse(
+            slots = result.slots.map { it.name },
+            outcome = result.outcome,
+            payout = MoneyDto.from(result.payout.amount),
+            freePlaysCredited = result.payout.freePlays,
+            float = MoneyDto.from(result.machine.float)
         )
     }
 }

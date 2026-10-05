@@ -26,4 +26,8 @@ class MachineController(private val machineService: MachineService) {
     @GetMapping("/{id}")
     fun get(@PathVariable id: UUID): MachineResponse =
         MachineResponse.from(id, machineService.get(id))
+
+    @PostMapping("/{id}/play")
+    fun play(@PathVariable id: UUID): PlayResponse =
+        PlayResponse.from(machineService.play(id))
 }
