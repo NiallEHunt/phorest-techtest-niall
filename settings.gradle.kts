@@ -5,6 +5,7 @@ plugins {
 
 rootProject.name = "phorest-techtest-niall"
 include("fruit-machine-core")
+include("fruit-machine-service")
 
 // Performance investigations only. See investigations/README.md.
 include("investigations")
