@@ -15,6 +15,12 @@ Run the service with:
 ```
 The service starts on `http://localhost:8080`. Machines are stored in memory, so they are lost when the service stops.
 
+Or, with Docker, without installing Java:
+```sh
+docker build -t fruit-machine .
+docker run -p 8080:8080 fruit-machine
+```
+
 ## Project structure
 - `fruit-machine-core`: the game logic. Pure Kotlin with no Spring dependency. It takes a machine and returns the result of a play along with the updated machine.
 - `fruit-machine-service`: the Spring Boot REST service. It validates requests, stores the machines and calls into the core.
