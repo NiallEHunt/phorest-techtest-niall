@@ -102,3 +102,6 @@ Metrics are available through Spring Boot Actuator:
 - **Players and redeeming free plays.** Free plays are reported in the play result but not stored anywhere. There are no players or accounts to hold them.
 - **Reconfiguring a machine.** A machine's config is fixed once it's created. To change it, you create a new machine.
 - **Configurable prize rules.** The rules are hard-coded in a single pass over the slots. See the decision log for the trade-off.
+
+## Time spent
+Doing this work, I definitely went over the 4 hour suggestion. I was working on this in short sessions around my other commitments and would dip in and out as needed. Most of the work that took me over the 4 hours were the extras: performance investigation (see `investigations/README.md`), concurrency testing, and validation. In a real world system these are required pieces of work, but to better stick to the 4 hours I could have omitted them. However, to be honest I was having fun making this project.
