@@ -26,7 +26,7 @@ docker run -p 8080:8080 fruit-machine
 - `fruit-machine-service`: the Spring Boot REST service. It validates requests, stores the machines and calls into the core.
 - `investigations`: performance benchmarks I used to decide how to represent colours. Not part of the service. See [investigations/README.md](investigations/README.md).
 
-The key decisions I made, and why, are in the [decision log](docs/decision_log.md).
+The key decisions I made, and why, are in the [decision log](docs/decision_log.md). How I used AI, and where I disagreed with it, is in the [AI usage log](docs/ai_usage.md).
 
 ## Endpoints
 All amounts are in the minor units of an ISO 4217 currency (e.g. `100` EUR is €1.00).
