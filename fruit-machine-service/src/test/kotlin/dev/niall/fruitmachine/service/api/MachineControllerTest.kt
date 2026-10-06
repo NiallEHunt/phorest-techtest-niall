@@ -4,6 +4,7 @@ import dev.niall.fruitmachine.core.FruitMachineEngine
 import dev.niall.fruitmachine.service.MachineService
 import dev.niall.fruitmachine.service.sequenceRandom
 import dev.niall.fruitmachine.service.persistence.InMemoryMachineRepository
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import org.hamcrest.Matcher
 import org.hamcrest.Matchers.contains
 import org.hamcrest.Matchers.containsString
@@ -29,6 +30,10 @@ class MachineControllerTest(@Autowired private val mockMvc: MockMvc) {
     class JackpotEngine {
         @Bean
         fun fruitMachineEngine() = FruitMachineEngine(sequenceRandom(0))
+
+        // @WebMvcTest doesn't set up metrics, so MachineService needs a registry of its own.
+        @Bean
+        fun meterRegistry() = SimpleMeterRegistry()
     }
 
     private val createRequest = """

@@ -86,3 +86,10 @@ There is one known gap. The float can still overflow after millions of plays at 
 
 ### Randomness
 The service uses `SecureRandom` for spins. This is a game played for money, so it shouldn't be possible to predict the next spin from previous ones. The core still takes the random as a parameter, so tests can use a fixed one.
+
+### Logging and metrics
+I log every machine created and every play, with the outcome, payout, free plays credited and the new float. For a game played for money, being able to trace what happened on each play seemed worth more than keeping the logs quiet. In a real system with a lot of traffic I'd revisit this, possibly moving plays to debug or into a proper audit store.
+
+For metrics I used Micrometer through Spring Boot Actuator, as it's the standard for Spring and can be plugged into Prometheus, Datadog, etc. without code changes. The service counts plays by outcome, records payouts and counts free plays credited. This makes it possible to check that the real jackpot and small prize rates match what the rules say they should be, and to spot a machine paying out more than expected. Payouts are tagged by currency, because adding euro and yen together would be meaningless. Nothing is tagged by machine id, as every new machine would create a new set of metrics.
+
+The metrics and logs are recorded after the atomic update rather than inside it. The repository's contract allows the update to run more than once, so recording inside it could count the same play twice.

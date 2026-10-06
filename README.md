@@ -87,6 +87,16 @@ Errors use the [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457) problem detail
 }
 ```
 
+## Metrics and logging
+Every machine created and every play is logged, with the outcome, payout, free plays credited and the new float.
+
+Metrics are available through Spring Boot Actuator:
+- `GET /actuator/health`: whether the service is up.
+- `GET /actuator/metrics/fruitmachine.plays`: the number of plays, tagged by `outcome` (e.g. `?tag=outcome:JACKPOT`).
+- `GET /actuator/metrics/fruitmachine.payouts`: the count, total and largest payout in minor units, tagged by `currency`.
+- `GET /actuator/metrics/fruitmachine.free.plays.credited`: the total free plays credited.
+- `GET /actuator/metrics/fruitmachine.machines.created`: the number of machines created.
+
 ## What I left out
 - **Persistence.** Machines live in memory. The repository is an interface with a contract test, so a database implementation could be swapped in. Across multiple instances, I'd use optimistic locking in the database to keep plays on the same machine atomic.
 - **Players and redeeming free plays.** Free plays are reported in the play result but not stored anywhere. There are no players or accounts to hold them.
