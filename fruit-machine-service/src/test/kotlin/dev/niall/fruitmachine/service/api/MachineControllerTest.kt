@@ -128,6 +128,21 @@ class MachineControllerTest(@Autowired private val mockMvc: MockMvc) {
     }
 
     @Test
+    fun `creating a machine beyond the service limits returns 400 listing the invalid fields`() {
+        val request = createRequest
+            .replace("\"slotCount\": 4", "\"slotCount\": ${MAX_SLOT_COUNT + 1}")
+            .replace("\"minorUnits\": 100,", "\"minorUnits\": ${MAX_AMOUNT_MINOR_UNITS + 1},")
+
+        createMachine(request).andExpect {
+            status { isBadRequest() }
+            content { contentType(MediaType.APPLICATION_PROBLEM_JSON) }
+            jsonPath("$.status") { value(400) }
+            jsonPath("$.errors[*].field") { value(contains("playCost.minorUnits", "slotCount")) }
+            jsonPath("$.errors[*].message") { value(contains("must be less than or equal to $MAX_AMOUNT_MINOR_UNITS", "must be less than or equal to $MAX_SLOT_COUNT")) }
+        }
+    }
+
+    @Test
     fun `creating a machine with malformed JSON returns 400 problem details`() {
         createMachine("{ not json").andExpect {
             status { isBadRequest() }

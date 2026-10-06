@@ -6,10 +6,14 @@ import dev.niall.fruitmachine.core.FruitMachineConfig
 import dev.niall.fruitmachine.core.Money
 import dev.niall.fruitmachine.core.Outcome
 import dev.niall.fruitmachine.core.PlayResult
+import jakarta.validation.Valid
+import jakarta.validation.constraints.Max
+import jakarta.validation.constraints.Size
 import java.util.Currency
 import java.util.UUID
 
 data class MoneyDto(
+    @field:Max(MAX_AMOUNT_MINOR_UNITS)
     val minorUnits: Long,
     val currency: String
 ) {
@@ -22,11 +26,20 @@ data class MoneyDto(
 
 class InvalidMachineConfigException(message: String?, cause: Throwable) : RuntimeException(message, cause)
 
+// Service limits, not game rules: keep each play cheap and amounts well clear of overflow.
+const val MAX_SLOT_COUNT = 10_000
+const val MAX_COLOURS = 1_000
+const val MAX_AMOUNT_MINOR_UNITS = 1_000_000_000_000L
+
 data class CreateMachineRequest(
+    @field:Max(MAX_SLOT_COUNT.toLong())
     val slotCount: Int,
+    @field:Size(max = MAX_COLOURS)
     val colours: List<String>,
     val adjacentSlotsForSmallPrize: Int,
+    @field:Valid
     val playCost: MoneyDto,
+    @field:Valid
     val startingFloat: MoneyDto
 ) {
     fun toFruitMachine(): FruitMachine = try {

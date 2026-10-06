@@ -1,6 +1,7 @@
 package dev.niall.fruitmachine.service.api
 
 import dev.niall.fruitmachine.service.MachineService
+import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -15,7 +16,7 @@ import java.util.UUID
 @RequestMapping("/machines")
 class MachineController(private val machineService: MachineService) {
     @PostMapping
-    fun create(@RequestBody request: CreateMachineRequest): ResponseEntity<MachineResponse> {
+    fun create(@Valid @RequestBody request: CreateMachineRequest): ResponseEntity<MachineResponse> {
         val machine = request.toFruitMachine()
         val id = machineService.create(machine)
         val location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(id).toUri()
