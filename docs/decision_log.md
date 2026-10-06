@@ -53,3 +53,36 @@ My decision after this investigation was to use a data class rather than a value
 It was straightforward in this architecture to generalise the machines. The `FruitMachineEngine` is given a machine that is preconfigured. The caller of this engine is in charge of storing that configuration and float. This will be tackled in part 4. As talked about in the architecture section, I chose to keep the machine configuration and data separated from the logic. This lets us build pure functions that operate on the given data and return the output. This helps with testing and separation of concerns.
 
 There was a trade-off I had to make with the game rules. Based on the performance investigations in the colour representation section above, I decided to perform all of the rule checks in one pass through the slots and exit early. With this decision, adding additional rules becomes a bit of a headache. We would have to add the new logic into the existing evaluator and the complexity would continue to grow. We could have rules defined as data/config similarly to the machine config, which would make it a lot more extensible. The engine would take in the rules and how to evaluate them and perform the evaluation. However, for this exercise we don't have a requirement to add additional rules yet. I decided it was better to not generalise early. We may never need to add additional rules, in which case that extra complexity would be wasted, and keeping the single pass with an early exit would take more machinery. We would have to revisit this decision when the need for additional rules comes up.
+
+## 6. Part 4
+### API design
+The brief talks about "the machine" but I have chosen to support many machines at once, each with its own id, rather than a single global machine that gets reconfigured. Creating a machine is a `POST /machines`, which returns a `201 Created` with the new machine's id and a `Location` header. Its state is read with `GET /machines/{id}`, and it's played with `POST /machines/{id}/play`. The ids are random UUIDs.
+
+I have interpreted "configure a machine" as choosing the config when the machine is created. Once created, a machine's config can't be changed. Changing the slots, colours or play cost of a machine that already has a float that was built up under different rules seemed confusing for players and would raise questions I can't answer without the product team (e.g. what happens to free plays credited at the old play cost).
+
+The play response returns the slots that were spun, the outcome, the payout, any free plays credited and the machine's new float. This follows on from part 1. I am assuming a player would want to see the actual spin, not just be told whether they won. All money is returned as minor units and a currency code, and formatting is left to the client (see Money in part 2).
+
+The request and response types are DTOs in the service module rather than the core's types. This keeps the JSON shape of the API separate from the game logic, so either can change without breaking the other.
+
+### Free plays
+Free plays credited by a shortfall are reported in the play result, but they aren't stored on the machine. There is no concept of a player or account in this assignment, so there is nothing to own the credit. The caller (e.g. a client tracking a player's session) would be responsible for holding and redeeming them.
+
+I considered storing them on the machine, like credits on a physical machine. However, if free plays were then used automatically, a machine with an empty float could get stuck. A free play adds no stake to the float, so every small prize on an empty float would credit 5 more free plays. In my opinion redeeming free plays properly needs players, which is a bigger change than this assignment calls for.
+
+### State
+The machines are stored behind a `MachineRepository` interface. The only implementation is in memory, backed by a `ConcurrentHashMap`. The service doesn't know how the machines are stored, so a database could be swapped in without touching the game logic or the API.
+
+As mentioned in the architecture section, two plays on the same machine at the same time must not both start from the same float. The repository's `update` is atomic per machine, and the guarantees an implementation must provide are written down on the interface. A shared contract test checks them, including a concurrency test that fails if the update isn't atomic. Any future implementation (e.g. a database using optimistic locking) can run the same test. Plays on different machines don't block each other.
+
+### Validation
+I have split validation into two kinds. The game rules (e.g. at least 3 slots, unique colours, a play cost above zero) stay in the core as `require` checks, because they define what a valid machine is no matter how it's created. The service adds its own limits on top using Bean Validation: at most 10,000 slots, 1,000 colours and amounts of 10^12 minor units. These aren't game rules. They stop a single request from creating a machine that is expensive to play, and keep amounts far enough from the limit of a `Long` that a play can't overflow.
+
+### Error handling
+All errors use the RFC 9457 problem details format, including Spring's own errors like malformed JSON, so a client only has to handle one error shape. When a request breaks a service limit, the response lists each invalid field rather than just saying the request was invalid.
+
+The core reports broken game rules with `IllegalArgumentException`. Rather than turning every `IllegalArgumentException` into a 400, only the ones thrown while building a machine from a request are wrapped in an `InvalidMachineConfigException` and returned as a 400. Any other `IllegalArgumentException` is a bug in our code, so it should still be a 500 and not be blamed on the caller.
+
+There is one known gap. The float can still overflow after millions of plays at the maximum play cost without a payout. `Money` uses exact arithmetic, so this throws rather than silently wrapping around, the play returns a 500 and the machine is left unchanged. I don't think this is worth handling for this assignment.
+
+### Randomness
+The service uses `SecureRandom` for spins. This is a game played for money, so it shouldn't be possible to predict the next spin from previous ones. The core still takes the random as a parameter, so tests can use a fixed one.
